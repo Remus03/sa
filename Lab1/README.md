@@ -35,7 +35,7 @@ Gazebo trebuie lansat prin intermediului ROS pentru a comunica cu restul procese
 
 5. Adaugarea masinii in mediu
     ```bash
-    ros2 run gazebo_ros spawn_entity.py -entity my_robot -file <path/to/sdf> -x 0 -y 0 -z 0.1
+    ros2 run gazebo_ros spawn_entity.py -entity sa_car -file <path/to/sdf> -x 0 -y 0 -z 0.1
     ```
 <br>
 
