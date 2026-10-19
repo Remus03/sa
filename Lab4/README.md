@@ -28,6 +28,10 @@ chmod +x frdm_imx95_provision.sh frdm_imx95_verify.sh
 
 10. Rulati scriptul frdm_imx95_verify.sh
 
+# Setup STM
+1. Instalati [STM32CubeProgrammer].
+2. Incarcati pe placuta binarul 
+
 # Setup Docker
 1. Descarcati imaginea de docker pe placa.
 ```bash
@@ -45,3 +49,4 @@ docker run -it --name my_ros --network host -v ~/car_ws:/car_ws -v /dev:/dev --p
 ```
 
 [aici]: https://www.nxp.com/document/guide/getting-started-with-frdm-imx95:GS-FRDM-IMX95
+[STM32CubeProgrammer]: https://www.st.com/en/development-tools/stm32cubeprog.html
