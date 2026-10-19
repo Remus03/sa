@@ -1,0 +1,53 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "-j8"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "Clean",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "clean"
+            ]
+        },
+        {
+            "label": "Flash",
+            "type": "shell",
+            "command": "/home/remus/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/STM32_Programmer_CLI",
+            "args": [
+                "-c",
+                "port=SWD",
+                "freq=8000",
+                "mode=UR",
+                "-w",
+                "build/car_firmware.elf",
+                "-v",
+                "-rst"
+            ],
+            "dependsOn": "Build"
+        },
+        {
+            "label": "Clean & Build & Flash",
+            "dependsOn": [
+                "Clean",
+                "Build",
+                "Flash"
+            ],
+            "dependsOrder": "sequence"
+        }
+    ]
+}

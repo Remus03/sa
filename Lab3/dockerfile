@@ -19,6 +19,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     TZ=Europe/Bucharest
 RUN apt install ros-humble-ros-base -y \
     && apt install ros-dev-tools -y
+RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 
 FROM ros AS nav
 ENV ROS_DISTRO=humble
