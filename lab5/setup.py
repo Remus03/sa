@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'Lab5'
+package_name = 'lab5'
 
 setup(
     name=package_name,
@@ -24,7 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'noisify_odometry_node = Lab5.noisify_odometry:main'
+            'noisify_odometry_node = lab5.noisify_odometry:main'
         ],
     },
 )

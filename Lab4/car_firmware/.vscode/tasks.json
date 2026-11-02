@@ -47,7 +47,8 @@
                 "Build",
                 "Flash"
             ],
-            "dependsOrder": "sequence"
+            "dependsOrder": "sequence",
+            "problemMatcher": []
         }
     ]
 }

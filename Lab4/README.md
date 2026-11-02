@@ -50,3 +50,8 @@ docker run -it --name my_ros --network host -v ~/car_ws:/car_ws -v /dev:/dev --p
 
 [aici]: https://www.nxp.com/document/guide/getting-started-with-frdm-imx95:GS-FRDM-IMX95
 [STM32CubeProgrammer]: https://www.st.com/en/development-tools/stm32cubeprog.html
+
+# Tema
+1. Controlati robotul din tastatura/joystick. Puteti avea ca intrare numere intre -1.0 si 1.0 de la teleop_twist_keyboard, iar ca iesire numere intre 0 si 4095, trimise apoi pe seriala.
+
+2. Controlati robotul printr-un controller open-loop, bazat pe Bicycle model. Intrarile trebuie sa fie referinte de viteza liniara si unghiulara. Iesirile trebuie sa fie comenzi pentru motorul DC is servomotor. Servomotorul urmareste deja referinta de unghi. Pentru motorul DC, trasati relatia intre comanda si viteza masinii.
