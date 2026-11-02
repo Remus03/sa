@@ -1,7 +1,7 @@
 # Setup iMX95
 1. Instalati minicom pentru a avea o interfata cu placa de dezvoltare.
 ```bash
-sudo apt install minicon
+sudo apt install minicom
 ```
 
 2. Alimentati placa si conectati prin usb calculatorul. Ghidul placii poate fi accesat [aici].
@@ -30,7 +30,7 @@ chmod +x frdm_imx95_provision.sh frdm_imx95_verify.sh
 
 # Setup STM
 1. Instalati [STM32CubeProgrammer].
-2. Incarcati pe placuta binarul 
+2. Incarcati pe placuta binarul.
 
 # Setup Docker
 1. Descarcati imaginea de docker pe placa.

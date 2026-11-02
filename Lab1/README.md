@@ -45,6 +45,13 @@ Gazebo trebuie lansat prin intermediului ROS pentru a comunica cu restul procese
     ```
 <br>
 
+Modelul publica datele IMU (orientare, viteza unghiulara si acceleratie) la 100 Hz pe topicul `/sa_car/imu/data`. Verificati mesajele cu:
+    ```bash
+    ros2 topic echo /sa_car/imu/data
+    ```
+<br>
+
+
 Pentru familirizarea cu mediul ROS2 si cu capabilitatile lui, parcurgeti urmatoarele tutoriale:
 https://docs.ros.org/en/humble/First-Steps.html
 https://docs.ros.org/en/humble/Tutorials/Beginner-CLI-Tools.html
