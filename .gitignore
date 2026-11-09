@@ -1,8 +1,8 @@
 .vscode
-lab4/car_firmware/build
-lab6
+car_firmware/build
 lab7
 lab8
 lab9
 lab10
+__pycache__
 ver.py

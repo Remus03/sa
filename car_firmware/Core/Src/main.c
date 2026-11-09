@@ -21,7 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "bno055_sup.h"
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,9 +45,17 @@
 
 DAC_HandleTypeDef hdac1;
 
+I2C_HandleTypeDef hi2c1;
+
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+
+struct bno055_t bno055 = {
+  .bus_read = bno055_i2c_read,
+  .bus_write = bno055_i2c_write,
+  .delay_msec = bno055_delay
+};
 
 /* USER CODE END PV */
 
@@ -55,6 +64,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DAC1_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -95,13 +105,8 @@ int main(void)
   MX_GPIO_Init();
   MX_DAC1_Init();
   MX_USART2_UART_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-
-  if (HAL_DAC_Start(&hdac1, DAC_CHANNEL_1) != HAL_OK ||
-      HAL_DAC_Start(&hdac1, DAC_CHANNEL_2) != HAL_OK)
-  {
-    Error_Handler();
-  }
 
   /* USER CODE END 2 */
 
@@ -111,16 +116,36 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   uint8_t serial_frame[5];
-  uint16_t dac1_value;
-  uint16_t dac2_value;
+  uint16_t dac1_value = 2048;
+  uint16_t dac2_value = 2048;
+
+  uint32_t last_bno_read = HAL_GetTick();
+  struct bno055_accel accel_data;
+  struct bno055_euler euler_data;
+
+  if (HAL_DAC_Start(&hdac1, DAC_CHANNEL_1) != HAL_OK ||
+      HAL_DAC_Start(&hdac1, DAC_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler(); //TODO: Handle DAC start error
+  }
 
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 2048);
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 2048);
 
+  HAL_Delay(1000);
+
+  if (bno055_init(&bno055) != BNO055_SUCCESS || bno055.chip_id != 0xA0 ||
+      bno055_set_powermode(POWER_MODE_NORMAL) != BNO055_SUCCESS ||
+      bno055_set_operation_mode(OPERATION_MODE_NDOF) != BNO055_SUCCESS)
+  {
+    Error_Handler(); //TODO: Handle BNO055 initialization error
+  }
+
   while (1)
   {
-    /* Receive two little-endian uint16 values followed by a newline terminator. */
-    if (HAL_UART_Receive(&huart2, serial_frame, sizeof(serial_frame), HAL_MAX_DELAY) == HAL_OK)
+    /* Wait for the next DAC command before updating the sensor output. */
+    if (HAL_UART_Receive(&huart2, serial_frame, sizeof(serial_frame),
+                         10) == HAL_OK)
     {
       if (serial_frame[4] != '\n')
       {
@@ -132,11 +157,30 @@ int main(void)
       dac2_value = (uint16_t)serial_frame[2] |
                    ((uint16_t)serial_frame[3] << 8);
 
-      /* DAC channels are 12-bit; clamp incoming values to the valid range. */
       if (dac1_value > 4095U) dac1_value = 4095U;
       if (dac2_value > 4095U) dac2_value = 4095U;
+
       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, dac1_value);
       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, dac2_value);
+    }
+
+    if (HAL_GetTick() - last_bno_read >= BNO_RATE)
+    {
+      if (bno055_read_accel_xyz(&accel_data) == BNO055_SUCCESS &&
+          bno055_read_euler_hrp(&euler_data) == BNO055_SUCCESS)
+      {
+        const float sensor_values[6] = {
+        accel_data.x / 100.0f,
+        accel_data.y / 100.0f,
+        accel_data.z / 100.0f,
+        euler_data.h / 16.0f,
+        euler_data.r / 16.0f,
+        euler_data.p / 16.0f
+        };
+
+        HAL_UART_Transmit(&huart2, (uint8_t *)sensor_values, sizeof(sensor_values), 500);
+        last_bno_read = HAL_GetTick();
+      };
     }
 
     /* USER CODE END WHILE */
@@ -242,6 +286,54 @@ static void MX_DAC1_Init(void)
   /* USER CODE BEGIN DAC1_Init 2 */
 
   /* USER CODE END DAC1_Init 2 */
+
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x10D19CE4;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
 
 }
 
